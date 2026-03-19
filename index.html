@@ -20,15 +20,84 @@
         min-height: 100vh;
       }
 
-      .chat-container {
+      /* ── Tela de seleção de modo ── */
+      .mode-screen {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        text-align: center;
+      }
+
+      .mode-screen h1 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #111;
+        margin-bottom: 8px;
+      }
+
+      .mode-screen p {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 28px;
+      }
+
+      .mode-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mode-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+      }
+
+      .mode-card:hover {
+        border-color: #075e54;
+        background: #f5faf9;
+      }
+
+      .mode-icon {
+        font-size: 28px;
+        flex-shrink: 0;
+      }
+
+      .mode-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #111;
+      }
+
+      .mode-desc {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+      }
+
+      /* ── Tela do chat ── */
+      .chat-screen {
+        display: none;
         width: 100%;
         max-width: 420px;
         height: 600px;
-        display: flex;
         flex-direction: column;
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+
+      .chat-screen.visible {
+        display: flex;
       }
 
       .chat-header {
@@ -220,31 +289,54 @@
     </style>
   </head>
   <body>
-    <div class="chat-container">
+    <!-- Tela de seleção de modo -->
+    <div class="mode-screen" id="mode-screen">
+      <h1>Olá! Sou a Aria 👋</h1>
+      <p>Escolha um modo para começar a conversa</p>
+      <div class="mode-options">
+        <div class="mode-card" onclick="startChat('store')">
+          <div class="mode-icon">🛒</div>
+          <div>
+            <div class="mode-title">Loja virtual</div>
+            <div class="mode-desc">Suporte a pedidos, produtos e entregas</div>
+          </div>
+        </div>
+        <div class="mode-card" onclick="startChat('clinic')">
+          <div class="mode-icon">🏥</div>
+          <div>
+            <div class="mode-title">Clínica médica</div>
+            <div class="mode-desc">Agendamentos, especialidades e dúvidas</div>
+          </div>
+        </div>
+        <div class="mode-card" onclick="startChat('general')">
+          <div class="mode-icon">💬</div>
+          <div>
+            <div class="mode-title">Conversa livre</div>
+            <div class="mode-desc">Assistente virtual de uso geral</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tela do chat -->
+    <div class="chat-screen" id="chat-screen">
       <div class="chat-header">
         <div class="avatar">A</div>
         <div class="header-info">
           <div class="header-name">Aria</div>
           <div class="header-status" id="status">online</div>
         </div>
-        <button class="btn-new" onclick="newConversation()">
-          Nova conversa
-        </button>
+        <button class="btn-new" onclick="newConversation()">Trocar modo</button>
       </div>
 
-      <div class="chat-body" id="chat-body">
-        <div class="message bot">
-          Olá! 👋 Sou a Aria, uma assistente virtual. Como posso te ajudar hoje?
-          <div class="time" id="first-time"></div>
-        </div>
-      </div>
+      <div class="chat-body" id="chat-body"></div>
 
       <div class="typing" id="typing">
         <span></span><span></span><span></span>
       </div>
 
       <div class="limit-warning" id="limit-warning">
-        Limite da demo atingido. Clique em "Nova conversa" para recomeçar.
+        Limite da demo atingido. Clique em "Trocar modo" para recomeçar.
       </div>
 
       <div class="chat-footer">
@@ -283,7 +375,22 @@
       const sessionId =
         "session-" + Math.random().toString(36).substring(2, 10);
 
-      document.getElementById("first-time").textContent = currentTime();
+      let currentMode = "general";
+
+      const modeConfig = {
+        store: {
+          welcome:
+            "Olá! 👋 Bem-vindo ao suporte da loja. Como posso te ajudar com seu pedido ou produto?",
+        },
+        clinic: {
+          welcome:
+            "Olá! 👋 Bem-vindo à nossa clínica. Posso ajudar com agendamentos ou dúvidas gerais.",
+        },
+        general: {
+          welcome:
+            "Olá! 👋 Sou a Aria, uma assistente virtual. Como posso te ajudar hoje?",
+        },
+      };
 
       function currentTime() {
         const d = new Date();
@@ -314,6 +421,18 @@
         document.getElementById("status").textContent = text;
       }
 
+      function startChat(mode) {
+        currentMode = mode;
+        document.getElementById("mode-screen").style.display = "none";
+        document.getElementById("chat-screen").classList.add("visible");
+
+        const body = document.getElementById("chat-body");
+        body.innerHTML = "";
+        addMessage(modeConfig[mode].welcome, "bot");
+
+        document.getElementById("chat-input").focus();
+      }
+
       async function sendMessage() {
         const input = document.getElementById("chat-input");
         const message = input.value.trim();
@@ -329,7 +448,7 @@
           const res = await fetch(`${API_URL}/api/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId, message }),
+            body: JSON.stringify({ sessionId, message, mode: currentMode }),
           });
 
           const data = await res.json();
@@ -361,13 +480,8 @@
           body: JSON.stringify({ sessionId }),
         });
 
-        const body = document.getElementById("chat-body");
-        body.innerHTML = `
-      <div class="message bot">
-        Olá! 👋 Sou a Aria, uma assistente virtual. Como posso te ajudar hoje?
-        <div class="time">${currentTime()}</div>
-      </div>
-    `;
+        document.getElementById("chat-screen").classList.remove("visible");
+        document.getElementById("mode-screen").style.display = "block";
         document.getElementById("limit-warning").classList.remove("visible");
         document.getElementById("chat-input").disabled = false;
       }

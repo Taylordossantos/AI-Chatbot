@@ -18,16 +18,17 @@ const router = Router();
  *
  * @body {string} sessionId - ID único da sessão (gerado no frontend)
  * @body {string} message   - Mensagem enviada pelo usuário
+ * @body {string} mode      - Modo da conversa: 'store' | 'clinic' | 'general'
  *
  * Fluxo:
  * 1. Busca o histórico da sessão no banco
  * 2. Adiciona a nova mensagem ao histórico
- * 3. Manda o histórico completo para o Claude
+ * 3. Manda o histórico completo para o Groq
  * 4. Salva as duas mensagens (user + assistant) no banco
  * 5. Retorna a resposta
  */
 router.post("/chat", sessionLimitGuard, async (req, res) => {
-  const { sessionId, message } = req.body;
+  const { sessionId, message, mode } = req.body;
 
   if (!message || typeof message !== "string" || message.trim() === "") {
     return res.status(400).json({ error: "Mensagem não pode ser vazia" });
@@ -47,7 +48,7 @@ router.post("/chat", sessionLimitGuard, async (req, res) => {
       { role: "user", content: message.trim() },
     ];
 
-    const reply = await chat(updatedHistory);
+    const reply = await chat(updatedHistory, mode);
 
     await saveMessage(sessionId, "user", message.trim());
     await saveMessage(sessionId, "assistant", reply);

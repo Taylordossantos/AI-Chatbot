@@ -131,6 +131,18 @@
       "role": "assistant",
       "content": "Olá! 😊 Estou aqui para ajudar. Essa é uma demo, então vamos agendar um atendimento de teste. Qual é o assunto que você gostaria de discutir? E qual horário seria mais conveniente para você? 🕒️",
       "createdAt": "2026-03-19T20:17:25.686Z"
+    },
+    {
+      "sessionId": "session-iwxj0eom",
+      "role": "user",
+      "content": "quero marcar uma consulta",
+      "createdAt": "2026-03-19T20:39:33.197Z"
+    },
+    {
+      "sessionId": "session-iwxj0eom",
+      "role": "assistant",
+      "content": "Olá! 🙋‍♀️ Claro, posso ajudar com isso! Qual é a especialidade que você precisa (ex: clínico geral, pediatria, ortopedia, etc.) e qual é a data e horário que você prefere?",
+      "createdAt": "2026-03-19T20:39:33.199Z"
     }
   ]
 }
