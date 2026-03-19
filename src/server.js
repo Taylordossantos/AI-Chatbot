@@ -8,6 +8,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import chatRoutes from "./routes/chat.js";
 
 const app = express();
@@ -25,6 +27,10 @@ app.use("/api", chatRoutes);
 app.get("/health", (req, res) => {
   res.json({ status: "ok", bot: process.env.BOT_NAME || "Aria" });
 });
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+// Serve o index.html na raiz
+app.use(express.static(join(__dirname, "..")));
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando em http://localhost:${PORT}`);

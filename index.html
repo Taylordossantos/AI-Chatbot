@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Chatbot — Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .chat-container {
+        width: 100%;
+        max-width: 420px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+
+      .chat-header {
+        background: #075e54;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background: #128c7e;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .header-info {
+        flex: 1;
+      }
+
+      .header-name {
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .header-status {
+        color: #b2dfdb;
+        font-size: 12px;
+        margin-top: 1px;
+      }
+
+      .btn-new {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: #fff;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-new:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .chat-body {
+        flex: 1;
+        background: #ece5dd;
+        padding: 16px 12px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .message {
+        max-width: 80%;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+
+      .message.bot {
+        background: #fff;
+        align-self: flex-start;
+        border-radius: 0 8px 8px 8px;
+        color: #111;
+      }
+
+      .message.user {
+        background: #dcf8c6;
+        align-self: flex-end;
+        border-radius: 8px 0 8px 8px;
+        color: #111;
+      }
+
+      .message .time {
+        font-size: 10px;
+        color: #999;
+        text-align: right;
+        margin-top: 4px;
+      }
+
+      .typing {
+        background: #fff;
+        align-self: flex-start;
+        padding: 10px 14px;
+        border-radius: 0 8px 8px 8px;
+        display: none;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .typing.visible {
+        display: flex;
+      }
+
+      .typing span {
+        width: 7px;
+        height: 7px;
+        background: #aaa;
+        border-radius: 50%;
+        animation: bounce 1.2s infinite;
+      }
+
+      .typing span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes bounce {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .chat-footer {
+        background: #f0f0f0;
+        padding: 10px 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .chat-input {
+        flex: 1;
+        border: none;
+        background: #fff;
+        border-radius: 20px;
+        padding: 10px 16px;
+        font-size: 14px;
+        outline: none;
+        color: #111;
+      }
+
+      .btn-send {
+        width: 40px;
+        height: 40px;
+        background: #075e54;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.2s;
+      }
+
+      .btn-send:hover {
+        background: #128c7e;
+      }
+
+      .btn-send svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .limit-warning {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        padding: 8px;
+        display: none;
+      }
+
+      .limit-warning.visible {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="avatar">A</div>
+        <div class="header-info">
+          <div class="header-name">Aria</div>
+          <div class="header-status" id="status">online</div>
+        </div>
+        <button class="btn-new" onclick="newConversation()">
+          Nova conversa
+        </button>
+      </div>
+
+      <div class="chat-body" id="chat-body">
+        <div class="message bot">
+          Olá! 👋 Sou a Aria, uma assistente virtual. Como posso te ajudar hoje?
+          <div class="time" id="first-time"></div>
+        </div>
+      </div>
+
+      <div class="typing" id="typing">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="limit-warning" id="limit-warning">
+        Limite da demo atingido. Clique em "Nova conversa" para recomeçar.
+      </div>
+
+      <div class="chat-footer">
+        <input
+          class="chat-input"
+          id="chat-input"
+          type="text"
+          placeholder="Digite uma mensagem..."
+          onkeydown="
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              sendMessage();
+            }
+          "
+        />
+        <button class="btn-send" onclick="sendMessage()">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:3000";
+      const sessionId =
+        "session-" + Math.random().toString(36).substring(2, 10);
+
+      document.getElementById("first-time").textContent = currentTime();
+
+      function currentTime() {
+        const d = new Date();
+        return (
+          d.getHours().toString().padStart(2, "0") +
+          ":" +
+          d.getMinutes().toString().padStart(2, "0")
+        );
+      }
+
+      function addMessage(content, role) {
+        const body = document.getElementById("chat-body");
+        const div = document.createElement("div");
+        div.className = `message ${role}`;
+        div.innerHTML = `${content}<div class="time">${currentTime()}</div>`;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      function setTyping(visible) {
+        const typing = document.getElementById("typing");
+        const body = document.getElementById("chat-body");
+        typing.classList.toggle("visible", visible);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      function setStatus(text) {
+        document.getElementById("status").textContent = text;
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById("chat-input");
+        const message = input.value.trim();
+        if (!message) return;
+
+        input.value = "";
+        input.disabled = true;
+        addMessage(message, "user");
+        setTyping(true);
+        setStatus("digitando...");
+
+        try {
+          const res = await fetch(`${API_URL}/api/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId, message }),
+          });
+
+          const data = await res.json();
+
+          if (res.status === 429) {
+            document.getElementById("limit-warning").classList.add("visible");
+            input.disabled = true;
+            return;
+          }
+
+          addMessage(data.reply, "bot");
+        } catch (err) {
+          addMessage(
+            "Erro ao conectar com o servidor. Tente novamente.",
+            "bot",
+          );
+        } finally {
+          setTyping(false);
+          setStatus("online");
+          input.disabled = false;
+          input.focus();
+        }
+      }
+
+      async function newConversation() {
+        await fetch(`${API_URL}/api/clear`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        const body = document.getElementById("chat-body");
+        body.innerHTML = `
+      <div class="message bot">
+        Olá! 👋 Sou a Aria, uma assistente virtual. Como posso te ajudar hoje?
+        <div class="time">${currentTime()}</div>
+      </div>
+    `;
+        document.getElementById("limit-warning").classList.remove("visible");
+        document.getElementById("chat-input").disabled = false;
+      }
+    </script>
+  </body>
+</html>
