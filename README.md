@@ -1,5 +1,9 @@
 # 🤖 AI Chatbot
 
+## Live Demo
+
+👉 [Try it here](https://ai-chatbot-production-5cff.up.railway.app)
+
 AI-powered chatbot with conversation memory, built with Node.js and Groq API.
 
 ![Node.js](https://img.shields.io/badge/Node.js-24.13.0-339933?style=flat&logo=node.js&logoColor=white)
