@@ -2,7 +2,7 @@
 
 AI-powered chatbot with conversation memory, built with Node.js and Groq API.
 
-![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-24.13.0-339933?style=flat&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.x-000000?style=flat&logo=express&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3-F55036?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
@@ -38,7 +38,7 @@ in public demos.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/SEU_USUARIO/AI-chatbot.git
+git clone https://github.com/Taylordossantos/AI-Chatbot.git
 cd AI-chatbot
 ```
 
