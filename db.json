@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "sessionId": "teste-1",
+      "role": "user",
+      "content": "Oi, quem e voce?",
+      "createdAt": "2026-03-19T19:21:36.664Z"
+    },
+    {
+      "sessionId": "teste-1",
+      "role": "assistant",
+      "content": "Olá! 😊 Eu sou Aria, uma assistente virtual. Estou aqui para ajudar e responder às suas perguntas. Essa é uma demo do meu funcionamento. Posso ajudar com algo específico? 🤔",
+      "createdAt": "2026-03-19T19:21:36.667Z"
+    }
+  ]
+}

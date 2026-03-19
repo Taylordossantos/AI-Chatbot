@@ -7,7 +7,7 @@
  */
 
 import { Router } from "express";
-import { chat } from "../services/claude.js";
+import { chat } from "../services/ai.js";
 import { getHistory, saveMessage, clearHistory } from "../services/database.js";
 import { sessionLimitGuard } from "../middleware/sessionLimit.js";
 

@@ -1,15 +1,15 @@
 /**
- * claude.js
+ * ai.js
  *
- * Cuida da comunicação com a API da Anthropic.
+ * Cuida da comunicação com a API da Groq.
  * É aqui que definimos a personalidade do bot e enviamos
  * o histórico da conversa para gerar a resposta.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import Groq from "groq-sdk";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 const BOT_NAME = process.env.BOT_NAME || "Aria";
@@ -35,28 +35,26 @@ REGRAS:
 - Mantenha respostas curtas — estamos num chat, não num e-mail
 - Use emojis com moderação
 - Se perguntarem como o projeto foi feito, explique: Node.js,
-  API Claude da Anthropic e lowdb para memória de conversas
+  API Groq e lowdb para memória de conversas
 - Nunca invente informações, preços ou dados de empresas reais
 - Deixe claro quando necessário que é uma demo`;
 }
 
 /**
- * Envia o histórico da conversa para o Claude e retorna a resposta.
+ * Envia o histórico da conversa para o Groq e retorna a resposta.
  *
  * @param {Array<{role: string, content: string}>} history - Histórico completo da sessão
  * @returns {Promise<string>} - Texto da resposta gerada
  *
- * Mandamos o histórico inteiro a cada requisição porque o Claude
+ * Mandamos o histórico inteiro a cada requisição porque o Groq
  * não guarda estado entre chamadas — cada request é independente.
  * A memória da conversa existe aqui no backend, não na API.
  */
 export async function chat(history) {
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    system: buildSystemPrompt(),
-    messages: history,
+  const response = await client.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "system", content: buildSystemPrompt() }, ...history],
   });
 
-  return response.content[0].text;
+  return response.choices[0].message.content;
 }
