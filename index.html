@@ -371,7 +371,7 @@
     </div>
 
     <script>
-      const API_URL = "https://ai-chatbot-production-5cff.up.railway.app";
+      const API_URL = "http://localhost:3000";
       const sessionId =
         "session-" + Math.random().toString(36).substring(2, 10);
 
@@ -444,6 +444,8 @@
         setTyping(true);
         setStatus("digitando...");
 
+        let handoff = false;
+
         try {
           const res = await fetch(`${API_URL}/api/chat`, {
             method: "POST",
@@ -460,16 +462,27 @@
           }
 
           addMessage(data.reply, "bot");
+
+          if (data.handoff) {
+            handoff = true;
+            input.placeholder = "Aguardando atendente humano...";
+            document.getElementById("btn-send").style.opacity = "0.4";
+            document.getElementById("btn-send").style.pointerEvents = "none";
+          }
         } catch (err) {
-          addMessage(
-            "Erro ao conectar com o servidor. Tente novamente.",
-            "bot",
-          );
+          if (!handoff) {
+            addMessage(
+              "Erro ao conectar com o servidor. Tente novamente.",
+              "bot",
+            );
+          }
         } finally {
           setTyping(false);
           setStatus("online");
-          input.disabled = false;
-          input.focus();
+          if (!handoff) {
+            input.disabled = false;
+            input.focus();
+          }
         }
       }
 
@@ -483,7 +496,12 @@
         document.getElementById("chat-screen").classList.remove("visible");
         document.getElementById("mode-screen").style.display = "block";
         document.getElementById("limit-warning").classList.remove("visible");
-        document.getElementById("chat-input").disabled = false;
+        const input = document.getElementById("chat-input");
+        const sendButton = document.getElementById("btn-send");
+        input.disabled = false;
+        input.placeholder = "Digite uma mensagem...";
+        sendButton.style.opacity = "1";
+        sendButton.style.pointerEvents = "auto";
       }
     </script>
   </body>

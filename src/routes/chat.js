@@ -7,9 +7,9 @@
  */
 
 import { Router } from "express";
-import { chat } from "../services/ai.js";
 import { getHistory, saveMessage, clearHistory } from "../services/database.js";
 import { sessionLimitGuard } from "../middleware/sessionLimit.js";
+import { chat, isHandoffRequest } from "../services/ai.js";
 
 const router = Router();
 
@@ -40,7 +40,15 @@ router.post("/chat", sessionLimitGuard, async (req, res) => {
       .status(400)
       .json({ error: "Mensagem muito longa (máx. 1000 caracteres)" });
   }
-
+  // Verifica se o usuário quer falar com um humano
+  console.log("[handoff check]", message, isHandoffRequest(message));
+  if (isHandoffRequest(message)) {
+    const handoffMessage =
+      "Claro! Estou transferindo você para um atendente humano. Por favor, aguarde um momento. 👨‍💼";
+    await saveMessage(sessionId, "user", message.trim());
+    await saveMessage(sessionId, "assistant", handoffMessage);
+    return res.json({ reply: handoffMessage, handoff: true });
+  }
   try {
     const history = getHistory(sessionId);
     const updatedHistory = [

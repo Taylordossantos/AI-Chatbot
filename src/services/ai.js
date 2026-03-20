@@ -13,7 +13,6 @@ const client = new Groq({
 });
 
 const BOT_NAME = process.env.BOT_NAME || "Aria";
-
 /**
  * System prompts por modo.
  *
@@ -21,6 +20,7 @@ const BOT_NAME = process.env.BOT_NAME || "Aria";
  * Trocar o system prompt é suficiente para mudar completamente
  * o comportamento — sem alterar nenhuma outra parte do código.
  */
+
 const systemPrompts = {
   store: `Você é ${BOT_NAME}, assistente virtual de uma loja online chamada "Minha Loja".
 
@@ -73,6 +73,28 @@ REGRAS:
  */
 function buildSystemPrompt(mode) {
   return systemPrompts[mode] || systemPrompts.general;
+}
+
+/**
+ * Verifica se o usuário está pedindo para falar com um humano.
+ * Checa palavras-chave comuns para transferência de atendimento.
+ *
+ * @param {string} message - Mensagem do usuário
+ * @returns {boolean}
+ */
+export function isHandoffRequest(message) {
+  const keywords = [
+    "atendente",
+    "humano",
+    "pessoa real",
+    "falar com alguém",
+    "transferir",
+    "transferência",
+    "ajuda humana",
+  ];
+
+  const normalized = message.toLowerCase().trim();
+  return keywords.some((keyword) => normalized.includes(keyword));
 }
 
 /**
