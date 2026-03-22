@@ -28,20 +28,20 @@ const router = Router();
  * 5. Retorna a resposta
  */
 router.post("/chat", sessionLimitGuard, async (req, res) => {
-  const { sessionId, message, mode } = req.body;
+  const { sessionId, message, mode, knowledge } = req.body;
 
   if (!message || typeof message !== "string" || message.trim() === "") {
     return res.status(400).json({ error: "Mensagem não pode ser vazia" });
   }
 
-  // Evita mensagens gigantes que aumentariam o custo da requisição
   if (message.length > 1000) {
     return res
       .status(400)
       .json({ error: "Mensagem muito longa (máx. 1000 caracteres)" });
   }
-  // Verifica se o usuário quer falar com um humano
+
   console.log("[handoff check]", message, isHandoffRequest(message));
+
   if (isHandoffRequest(message)) {
     const handoffMessage =
       "Claro! Estou transferindo você para um atendente humano. Por favor, aguarde um momento. 👨‍💼";
@@ -49,6 +49,7 @@ router.post("/chat", sessionLimitGuard, async (req, res) => {
     await saveMessage(sessionId, "assistant", handoffMessage);
     return res.json({ reply: handoffMessage, handoff: true });
   }
+
   try {
     const history = getHistory(sessionId);
     const updatedHistory = [
@@ -56,7 +57,7 @@ router.post("/chat", sessionLimitGuard, async (req, res) => {
       { role: "user", content: message.trim() },
     ];
 
-    const reply = await chat(updatedHistory, mode);
+    const reply = await chat(updatedHistory, mode, knowledge);
 
     await saveMessage(sessionId, "user", message.trim());
     await saveMessage(sessionId, "assistant", reply);

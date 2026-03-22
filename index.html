@@ -84,6 +84,118 @@
         margin-top: 2px;
       }
 
+      .knowledge-btn {
+        margin-top: 20px;
+        width: 100%;
+        padding: 12px;
+        background: none;
+        border: 1.5px dashed #ccc;
+        border-radius: 12px;
+        font-size: 13px;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .knowledge-btn:hover {
+        border-color: #075e54;
+        color: #075e54;
+        background: #f5faf9;
+      }
+
+      .knowledge-btn.active {
+        border-color: #075e54;
+        color: #075e54;
+        background: #f5faf9;
+      }
+
+      /* ── Tela de base de conhecimento ── */
+      .knowledge-screen {
+        display: none;
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      }
+
+      .knowledge-screen.visible {
+        display: block;
+      }
+
+      .knowledge-screen h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111;
+        margin-bottom: 8px;
+      }
+
+      .knowledge-screen p {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      .knowledge-screen textarea {
+        width: 100%;
+        height: 200px;
+        padding: 12px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #111;
+        resize: vertical;
+        outline: none;
+        transition: border 0.2s;
+        line-height: 1.6;
+      }
+
+      .knowledge-screen textarea:focus {
+        border-color: #075e54;
+      }
+
+      .knowledge-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .btn-save {
+        flex: 1;
+        padding: 11px;
+        background: #075e54;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .btn-save:hover {
+        background: #128c7e;
+      }
+
+      .btn-back {
+        padding: 11px 18px;
+        background: none;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-back:hover {
+        border-color: #aaa;
+        color: #333;
+      }
+
       /* ── Tela do chat ── */
       .chat-screen {
         display: none;
@@ -193,6 +305,16 @@
         margin-top: 4px;
       }
 
+      .knowledge-badge {
+        text-align: center;
+        font-size: 11px;
+        color: #075e54;
+        background: #e8f5e9;
+        padding: 4px 10px;
+        border-radius: 10px;
+        margin: 0 auto 4px;
+      }
+
       .typing {
         background: #fff;
         align-self: flex-start;
@@ -292,7 +414,25 @@
     <!-- Tela de seleção de modo -->
     <div class="mode-screen" id="mode-screen">
       <h1>Olá! Sou a Aria 👋</h1>
-      <p>Escolha um modo para começar a conversa</p>
+      <p>Configure a base de conhecimento e escolha o modo de atendimento</p>
+      <button
+        class="knowledge-btn"
+        id="knowledge-btn"
+        onclick="showKnowledge()"
+      >
+        📋 Configurar base de conhecimento
+      </button>
+      <div
+        style="
+          margin: 20px 0 12px;
+          font-size: 13px;
+          color: #666;
+          text-align: left;
+          font-weight: 500;
+        "
+      >
+        Escolha o modo de atendimento
+      </div>
       <div class="mode-options">
         <div class="mode-card" onclick="startChat('store')">
           <div class="mode-icon">🛒</div>
@@ -315,6 +455,30 @@
             <div class="mode-desc">Assistente virtual de uso geral</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Tela de base de conhecimento -->
+    <div class="knowledge-screen" id="knowledge-screen">
+      <h2>📋 Base de conhecimento</h2>
+      <p>
+        Cole aqui as informações do negócio: produtos, preços, horários,
+        políticas, FAQ ou qualquer texto relevante. O bot vai usar essas
+        informações para responder os clientes.
+      </p>
+      <textarea
+        id="knowledge-input"
+        placeholder="Exemplo:
+            Horário de funcionamento: Seg a Sex, 8h às 18h
+            Produtos: Camiseta R$49, Calça R$89, Tênis R$199
+            Frete grátis acima de R$150
+            Trocas aceitas em até 30 dias..."
+      ></textarea>
+      <div class="knowledge-actions">
+        <button class="btn-back" onclick="hideKnowledge()">Voltar</button>
+        <button class="btn-save" onclick="saveKnowledge()">
+          Salvar e voltar
+        </button>
       </div>
     </div>
 
@@ -352,7 +516,7 @@
             }
           "
         />
-        <button class="btn-send" onclick="sendMessage()">
+        <button class="btn-send" id="btn-send" onclick="sendMessage()">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -376,6 +540,7 @@
         "session-" + Math.random().toString(36).substring(2, 10);
 
       let currentMode = "general";
+      let currentKnowledge = "";
 
       const modeConfig = {
         store: {
@@ -421,6 +586,32 @@
         document.getElementById("status").textContent = text;
       }
 
+      function showKnowledge() {
+        document.getElementById("mode-screen").style.display = "none";
+        document.getElementById("knowledge-screen").classList.add("visible");
+        document.getElementById("knowledge-input").value = currentKnowledge;
+      }
+
+      function hideKnowledge() {
+        document.getElementById("knowledge-screen").classList.remove("visible");
+        document.getElementById("mode-screen").style.display = "block";
+      }
+
+      function saveKnowledge() {
+        currentKnowledge = document
+          .getElementById("knowledge-input")
+          .value.trim();
+        const btn = document.getElementById("knowledge-btn");
+        if (currentKnowledge) {
+          btn.classList.add("active");
+          btn.textContent = "✅ Base de conhecimento configurada";
+        } else {
+          btn.classList.remove("active");
+          btn.textContent = "📋 Configurar base de conhecimento";
+        }
+        hideKnowledge();
+      }
+
       function startChat(mode) {
         currentMode = mode;
         document.getElementById("mode-screen").style.display = "none";
@@ -428,8 +619,15 @@
 
         const body = document.getElementById("chat-body");
         body.innerHTML = "";
-        addMessage(modeConfig[mode].welcome, "bot");
 
+        if (currentKnowledge) {
+          const badge = document.createElement("div");
+          badge.className = "knowledge-badge";
+          badge.textContent = "📋 Base de conhecimento ativa";
+          body.appendChild(badge);
+        }
+
+        addMessage(modeConfig[mode].welcome, "bot");
         document.getElementById("chat-input").focus();
       }
 
@@ -450,7 +648,12 @@
           const res = await fetch(`${API_URL}/api/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId, message, mode: currentMode }),
+            body: JSON.stringify({
+              sessionId,
+              message,
+              mode: currentMode,
+              knowledge: currentKnowledge,
+            }),
           });
 
           const data = await res.json();

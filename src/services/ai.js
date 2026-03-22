@@ -69,12 +69,26 @@ REGRAS:
 
 /**
  * Retorna o system prompt do modo escolhido.
+ * Se knowledge base for fornecida, injeta as informações no prompt.
  * Se o modo não existir, usa o geral como fallback.
+ *
+ * @param {string} mode - Modo da conversa
+ * @param {string} knowledge - Base de conhecimento do negócio (opcional)
  */
-function buildSystemPrompt(mode) {
-  return systemPrompts[mode] || systemPrompts.general;
-}
+function buildSystemPrompt(mode, knowledge = "") {
+  const base = systemPrompts[mode] || systemPrompts.general;
 
+  if (!knowledge) return base;
+
+  return `${base}
+
+BASE DE CONHECIMENTO DO NEGÓCIO:
+Use as informações abaixo para responder as perguntas do usuário.
+Priorize sempre essas informações nas respostas.
+Se a pergunta não estiver coberta aqui, responda com o que sabe ou diga que vai verificar.
+
+${knowledge}`;
+}
 /**
  * Verifica se o usuário está pedindo para falar com um humano.
  * Checa palavras-chave comuns para transferência de atendimento.
@@ -102,17 +116,14 @@ export function isHandoffRequest(message) {
  *
  * @param {Array<{role: string, content: string}>} history - Histórico completo da sessão
  * @param {string} mode - Modo da conversa: 'store' | 'clinic' | 'general'
+ * @param {string} knowledge - Base de conhecimento do negócio (opcional)
  * @returns {Promise<string>} - Texto da resposta gerada
- *
- * Mandamos o histórico inteiro a cada requisição porque o Groq
- * não guarda estado entre chamadas — cada request é independente.
- * A memória da conversa existe aqui no backend, não na API.
  */
-export async function chat(history, mode = "general") {
+export async function chat(history, mode = "general", knowledge = "") {
   const response = await client.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
-      { role: "system", content: buildSystemPrompt(mode) },
+      { role: "system", content: buildSystemPrompt(mode, knowledge) },
       ...history,
     ],
   });
